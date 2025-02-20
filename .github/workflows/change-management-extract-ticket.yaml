@@ -1,0 +1,44 @@
+name: Extract Change Management Ticket
+
+on:
+  workflow_call:
+    outputs:
+      ticket:
+        description: "The extracted CHGMT ticket number"
+        value: ${{ jobs.extract.outputs.ticket }}
+    inputs:
+      pr_number:
+        required: true
+        type: string
+        description: "Pull request number"
+
+jobs:
+  extract:
+    permissions:
+      pull-requests: read
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      ticket: ${{ steps.ticket.outputs.ticket }}
+    steps:
+      - name: Extract CHGMT ticket from PR description
+        id: ticket
+        uses: actions/github-script@v6
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: process.env.OWNER,
+              repo: process.env.REPO,
+              pull_number: parseInt(process.env.PR_NUMBER)
+            });
+
+            const match = pr.body && pr.body.match(/Change Management Ticket: https:\/\/sanskarj456.atlassian.net\/browse\/(CHMGT-\d+)/);
+            if (!match) {
+              core.setOutput('ticket', '');
+              return;
+            }
+            core.setOutput('ticket', match[1]);
