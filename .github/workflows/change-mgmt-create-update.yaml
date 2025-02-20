@@ -47,6 +47,24 @@ jobs:
 
           echo "pr_email=$EMAIL" >> $GITHUB_ENV
 
+      - name: Get PR user email
+        id: get_email
+        run: |
+          # Fetch the user's public email using the GitHub API
+          USER_EMAIL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/users/${{ github.event.pull_request.user.login }}" | jq -r '.email')
+
+          # If the email is not public, it will be null
+          if [ "$USER_EMAIL" == "null" ]; then
+            echo "User email is not public or not available."
+          else
+            echo "User email: $USER_EMAIL"
+          fi
+
+          # Set the email as an output for later steps
+          
+          echo "::set-output name=email::$USER_EMAIL"
+
       - name: Extract version from branch name
         id: version
         run: |
