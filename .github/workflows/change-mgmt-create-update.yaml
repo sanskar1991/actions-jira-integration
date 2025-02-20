@@ -31,6 +31,22 @@ jobs:
         id: pr_author
         run: echo "PR_AUTHOR=${{ github.actor }}" >> $GITHUB_ENV
 
+      - name: Get PR Creator Email
+        id: pr_email
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_AUTHOR="${{ github.actor }}"
+          EMAIL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/users/$PR_AUTHOR" | jq -r '.email')
+
+          if [[ "$EMAIL" == "null" || -z "$EMAIL" ]]; then
+            echo "GitHub email not found for $PR_AUTHOR. Using default JIRA account."
+            EMAIL="${{ secrets.JIRA_FALLBACK_EMAIL }}"
+          fi
+
+          echo "pr_email=$EMAIL" >> $GITHUB_ENV
+
       - name: Extract version from branch name
         id: version
         run: |
@@ -44,6 +60,19 @@ jobs:
           JIRA_BASE_URL: https://sanskarj456.atlassian.net
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+      - name: Get JIRA Account ID for PR Creator
+        id: jira_user_lookup
+        run: |
+          JIRA_USER=$(curl -s -u "${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
+          -X GET "https://sz.atlassian.net/rest/api/3/user/search?query=${{ env.pr_email }}" | jq -r '.[0].accountId')
+
+        if [[ "$JIRA_USER" == "null" || -z "$JIRA_USER" ]]; then
+          echo "No matching JIRA user found for $PR_AUTHOR ($pr_email). Using default service account."
+          JIRA_USER="${{ secrets.JIRA_FALLBACK_ACCOUNT_ID }}"
+        fi
+
+        echo "jira_user=$JIRA_USER" >> $GITHUB_ENV
 
       - name: Get JIRA Account ID of PR Author
         id: jira_user_lookup
