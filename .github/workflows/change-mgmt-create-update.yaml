@@ -31,20 +31,7 @@ jobs:
         id: pr_author
         run: echo "PR_AUTHOR=${{ github.actor }}" >> $GITHUB_ENV
 
-      - name: Load GitHub-to-JIRA Mapping
-        id: lookup_email
-        env:
-          USER_MAPPING: ${{ secrets.USERNAME_EMAIL_MAPPING }}
-        run: |
-          PR_AUTHOR="${{ github.actor }}"
-          EMAIL=$(echo "$USER_MAPPING" | jq -r --arg user "$PR_AUTHOR" '.[$user]')
       
-          if [[ "$EMAIL" == "null" || -z "$EMAIL" ]]; then
-            echo "GitHub email not found in mapping. Using default JIRA account."
-            EMAIL="${{ secrets.JIRA_FALLBACK_EMAIL }}"
-          fi
-
-          echo "pr_email=$EMAIL" >> $GITHUB_ENV
 
       - name: Retrieve email from mapping
         run: |
