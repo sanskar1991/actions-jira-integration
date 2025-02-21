@@ -97,7 +97,7 @@ jobs:
         uses: atlassian/gajira-create@v3
         with:
           project: CHMGT
-          issuetype: "Story"
+          issuetype: "Task"
           summary: Release project version ${{ steps.version.outputs.version }}
           description: "Release Branch: ${{ github.event.pull_request.head.ref }}\nPR Link: ${{ github.event.pull_request.html_url }}"
           fields: |
