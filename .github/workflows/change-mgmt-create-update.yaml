@@ -97,19 +97,12 @@ jobs:
         uses: atlassian/gajira-create@v3
         with:
           project: CHMGT
-          issuetype: "Task"
+          issuetype: "[System] Change"
           summary: Release project version ${{ steps.version.outputs.version }}
           description: "Release Branch: ${{ github.event.pull_request.head.ref }}\nPR Link: ${{ github.event.pull_request.html_url }}"
           fields: |
             {
               "assignee": { "id": "${{ env.jira_user }}" },
-              "customfield_10105": "Deploy changes following [QA and Deployment Process](https://sanskarj456.atlassian.net/wiki/spaces/LPD/pages/532774929/QA+and+Deployment+Process)",
-              "customfield_10106": "Deploy revert or hotfix following [QA and Deployment Process](https://sanskarj456.atlassian.net/wiki/spaces/LPD/pages/532774929/QA+and+Deployment+Process)",
-              "customfield_10107": "Test changes following [QA and Deployment Process](https://sanskarj456.atlassian.net/wiki/spaces/LPD/pages/532774929/QA+and+Deployment+Process)",
-              "customfield_10103": "${{ format(github.event.pull_request.created_at, 'yyyy-MM-dd HH:mm') }}",
-              "customfield_10104": "${{ format(github.event.pull_request.created_at, 'yyyy-MM-dd HH:mm') }}",
-              "customfield_10097": [{ "name": "jira-servicemanagement-users-sanskarj456" }],
-              "customfield_10010": [{ "name": "Request a change" }]
             }
 
       - name: Add CHMGT ticket to PR description
