@@ -46,39 +46,17 @@ jobs:
 
           echo "pr_email=$EMAIL" >> $GITHUB_ENV
 
-      - name: Get PR Creator Email
-        id: pr_email
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Retrieve email from mapping
         run: |
+          # Access the secret and parse it using jq
           PR_AUTHOR="${{ github.actor }}"
-          EMAIL=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/users/$PR_AUTHOR" | jq -r '.email')
+          EMAIL=$(echo '${{ secrets.GITHUB_JIRA_MAPPING }}' | jq -r ."$PR_AUTHOR")
 
-          if [[ "$EMAIL" == "null" || -z "$EMAIL" ]]; then
-            echo "GitHub email not found for $PR_AUTHOR. Using default JIRA account."
-            EMAIL="${{ secrets.JIRA_FALLBACK_EMAIL }}"
-          fi
-
-          echo "pr_email=$EMAIL" >> $GITHUB_ENV
-
-      - name: Get PR user email
-        id: get_email
-        run: |
-          # Fetch the user's public email using the GitHub API
-          USER_EMAIL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/users/${{ github.event.pull_request.user.login }}" | jq -r '.email')
-
-          # If the email is not public, it will be null
-          if [ "$USER_EMAIL" == "null" ]; then
-            echo "User email is not public or not available."
+          if [ "$EMAIL" == "null" ]; then
+            echo "No email found for GitHub username: $USERNAME"
           else
-            echo "User email: $USER_EMAIL"
+            echo "Email for GitHub username $USERNAME is: $EMAIL"
           fi
-
-          # Set the email as an output for later steps
-          
-          echo "::set-output name=email::$USER_EMAIL"
 
       - name: Extract version from branch name
         id: version
