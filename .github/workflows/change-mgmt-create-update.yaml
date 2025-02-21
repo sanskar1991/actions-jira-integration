@@ -102,6 +102,7 @@ jobs:
           description: "Release Branch: ${{ github.event.pull_request.head.ref }}\nPR Link: ${{ github.event.pull_request.html_url }}"
           fields: |
             {
+              "assignee": { "id": "${{ env.jira_user }}" },
               "assignee": { "id": "${{ env.jira_user }}" }
             }
 
