@@ -46,18 +46,6 @@ jobs:
 
           echo "pr_email=$EMAIL" >> $GITHUB_ENV
 
-      - name: Retrieve email from mapping
-        run: |
-          # Access the secret and parse it using jq
-          PR_AUTHOR="${{ github.actor }}"
-          EMAIL=$(echo '${{ secrets.GITHUB_JIRA_MAPPING }}' | jq -r ."$PR_AUTHOR")
-
-          if [ "$EMAIL" == "null" ]; then
-            echo "No email found for GitHub username: $USERNAME"
-          else
-            echo "Email for GitHub username $USERNAME is: $EMAIL"
-          fi
-
       - name: Extract version from branch name
         id: version
         run: |
